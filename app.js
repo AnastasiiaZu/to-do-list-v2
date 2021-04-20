@@ -16,13 +16,20 @@ mongoose.connect("mongodb+srv://admin_anastasiia:8XbeFQLYLbjXQim@todolist.ttb17.
   useUnifiedTopology: true
 });
 
+//***** V1 used arrays to store data
+// const items = ["Buy food", "Cook the food", "Eat the food"];
+// const workItems = ["Do the work"]
+
+//V2 uses MongoDB &  Mongoose:
+
+//first create a Schema
 const itemsSchema = {
   name: String
 };
-
+//then create a new model (collection) after this schema
 const Item = mongoose.model("Item", itemsSchema);
 
-
+//add documents to the collection
 const item1 = new Item({
   name: "Welcome to your todolist!"
 });
@@ -35,8 +42,10 @@ const item3 = new Item({
   name: "<-- Hit this to delete an item."
 });
 
+//putting documents into an array
 const defaultItems = [item1, item2, item3];
 
+//will add new pages when user created them
 const listSchema = {
   name: String,
   items: [itemsSchema]
@@ -44,11 +53,11 @@ const listSchema = {
 
 const List = mongoose.model("List", listSchema);
 
-
+// The GET HOME route //
 app.get("/", function(req, res) {
-
+//finding the data that was inserted
   Item.find({}, function(err, foundItems){
-
+//inserting all documents into the Mongo // DB but only once (the if statement)
     if (foundItems.length === 0) {
       Item.insertMany(defaultItems, function(err){
         if (err) {
@@ -64,9 +73,12 @@ app.get("/", function(req, res) {
   });
 });
 
+//DYNAMIC GET routes -
+//depend on the input parameters. customListName = what user enters after a https:localhost:3000/...
 app.get("/:customListName", function(req, res){
   const customListName = _.capitalize(req.params.customListName);
 
+//creating new routes, saving them to the List collecion and giving them content from defaultItems
   List.findOne({name: customListName}, function(err, foundList){
     if (!err){
       if (!foundList){
@@ -84,18 +96,20 @@ app.get("/:customListName", function(req, res){
       }
     }
   });
-
 });
 
+//POST route to grab data from HTTP body into Mongo DB
 app.post("/", function(req, res){
 
   const itemName = req.body.newItem;
   const listName = req.body.list;
 
+  // creating a new MongoDB document
   const item = new Item({
     name: itemName
   });
 
+//checking which list to add the item to
   if (listName === "Today"){
     item.save();
     res.redirect("/");
@@ -108,6 +122,7 @@ app.post("/", function(req, res){
   }
 });
 
+// DELETE route - getting the id of a checked item and deleting it
 app.post("/delete", function(req, res){
   const checkedItemId = req.body.checkbox;
   const listName = req.body.listName;
@@ -120,6 +135,7 @@ app.post("/delete", function(req, res){
       }
     });
   } else {
+    // $pull operator deleted the found item
     List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}}, function(err, foundList){
       if (!err){
         res.redirect("/" + listName);
@@ -132,8 +148,9 @@ app.get("/about", function(req, res){
   res.render("about");
 });
 
+//LISTENING on port 3000 and Heroku
 let port = process.env.PORT;
 if (port == null || port == "") {
-  port = 8000;
+  port = 3000;
 }
 app.listen(port);
