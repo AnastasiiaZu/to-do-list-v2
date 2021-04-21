@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 //requiering and connecting to Mongoose + creating todolistDB - need to fix deprecation warnings until the new version comes out
-mongoose.connect("mongodb+srv://admin_anastasiia:8XbeFQLYLbjXQim@todolist.ttb17.mongodb.net/todolistDB", {
+mongoose.connect("mongodb+srv://admin_anastasiia:<PASSWORD_AND_TABLE>.mongodb.net/todolistDB", {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
